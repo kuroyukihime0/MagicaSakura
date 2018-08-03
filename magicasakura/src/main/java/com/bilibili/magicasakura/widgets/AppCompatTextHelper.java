@@ -20,7 +20,6 @@ import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.support.annotation.ColorRes;
 import android.util.AttributeSet;
-import android.view.View;
 import android.widget.TextView;
 
 import com.bilibili.magicasakura.R;
@@ -31,16 +30,11 @@ import com.bilibili.magicasakura.utils.TintManager;
  * @author xyczero617@gmail.com
  * @time 15/9/26
  */
-public class AppCompatTextHelper extends AppCompatBaseHelper {
+class AppCompatTextHelper extends AppCompatBaseHelper<TextView> {
 
     //If writing like this:
     //int[] ATTRS = { R.attr.tintText, android.R.attr.textColor, android.R.attr.textColorLink, ...};
     //we can't get textColor value when api is below 20;
-    private static final int[] ATTRS = {
-            android.R.attr.textColor,
-            android.R.attr.textColorLink,
-            android.R.attr.textAppearance,
-    };
 
     private int mTextColorId;
     private int mTextLinkColorId;
@@ -48,24 +42,24 @@ public class AppCompatTextHelper extends AppCompatBaseHelper {
     private TintInfo mTextColorTintInfo;
     private TintInfo mTextLinkColorTintInfo;
 
-    public AppCompatTextHelper(View view, TintManager tintManager) {
+    AppCompatTextHelper(TextView view, TintManager tintManager) {
         super(view, tintManager);
     }
 
     @SuppressWarnings("ResourceType")
     @Override
     void loadFromAttribute(AttributeSet attrs, int defStyleAttr) {
-        TypedArray array = mView.getContext().obtainStyledAttributes(attrs, ATTRS, defStyleAttr, 0);
+        TypedArray array = mView.getContext().obtainStyledAttributes(attrs, R.styleable.TintTextHelper , defStyleAttr, 0);
 
-        int textColorId = array.getResourceId(0, 0);
+        int textColorId = array.getResourceId(R.styleable.TintTextHelper_android_textColor, 0);
         if (textColorId == 0) {
-            setTextAppearanceForTextColor(array.getResourceId(2, 0), false);
+            setTextAppearanceForTextColor(array.getResourceId(R.styleable.TintTextHelper_android_textAppearance, 0), false);
         } else {
             setTextColor(textColorId);
         }
 
-        if (array.hasValue(1)) {
-            setLinkTextColor(array.getResourceId(1, 0));
+        if (array.hasValue(R.styleable.TintTextHelper_android_textColorLink)) {
+            setLinkTextColor(array.getResourceId(R.styleable.TintTextHelper_android_textColorLink, 0));
         }
         array.recycle();
     }
@@ -116,7 +110,7 @@ public class AppCompatTextHelper extends AppCompatBaseHelper {
     private void setTextColor(ColorStateList tint) {
         if (skipNextApply()) return;
 
-        ((TextView) mView).setTextColor(tint);
+        mView.setTextColor(tint);
     }
 
     private void setTextColor(@ColorRes int resId) {
@@ -169,7 +163,7 @@ public class AppCompatTextHelper extends AppCompatBaseHelper {
 
     private void applySupportTextLinkColorTint() {
         if (mTextLinkColorTintInfo != null && mTextLinkColorTintInfo.mHasTintList) {
-            ((TextView) mView).setLinkTextColor(mTextLinkColorTintInfo.mTintList);
+            mView.setLinkTextColor(mTextLinkColorTintInfo.mTintList);
         }
     }
 

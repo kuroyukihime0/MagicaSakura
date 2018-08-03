@@ -1,45 +1,32 @@
-/*
- * Copyright (C) 2016 Bilibili
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.bilibili.magicasakura.widgets;
 
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.support.constraint.ConstraintLayout;
 import android.util.AttributeSet;
-import android.widget.GridLayout;
 
 import com.bilibili.magicasakura.utils.TintManager;
 
 /**
- * @author xyczero617@gmail.com
- * @time 16/2/23
+ * Created by feifan on 2017/4/11.
+ * Contacts me:404619986@qq.com
  */
-public class TintGridLayout extends GridLayout implements Tintable, AppCompatBackgroundHelper.BackgroundExtensible {
-    private AppCompatBackgroundHelper mBackgroundHelper;
+public class TintConstraintLayout extends ConstraintLayout implements Tintable, AppCompatBackgroundHelper.BackgroundExtensible,
+        AppCompatForegroundHelper.ForegroundExtensible {
 
-    public TintGridLayout(Context context) {
+    private AppCompatBackgroundHelper mBackgroundHelper;
+    private AppCompatForegroundHelper mForegroundHelper;
+
+    public TintConstraintLayout(Context context) {
         this(context, null);
     }
 
-    public TintGridLayout(Context context, AttributeSet attrs) {
+    public TintConstraintLayout(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public TintGridLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+    public TintConstraintLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         if (isInEditMode()) {
             return;
@@ -48,6 +35,45 @@ public class TintGridLayout extends GridLayout implements Tintable, AppCompatBac
 
         mBackgroundHelper = new AppCompatBackgroundHelper(this, tintManager);
         mBackgroundHelper.loadFromAttribute(attrs, defStyleAttr);
+
+        mForegroundHelper = new AppCompatForegroundHelper(this, tintManager);
+        mForegroundHelper.loadFromAttribute(attrs, defStyleAttr);
+    }
+
+    @Override
+    protected void drawableStateChanged() {
+        super.drawableStateChanged();
+        if (getBackground() != null) {
+            invalidateDrawable(getBackground());
+        }
+    }
+
+    @Override
+    public void setForeground(Drawable foreground) {
+        super.setForeground(foreground);
+        if (mForegroundHelper != null) {
+            mForegroundHelper.setForegroundDrawableExternal(foreground);
+        }
+    }
+
+    public void setForegroundResource(int resId) {
+        if (mForegroundHelper != null) {
+            mForegroundHelper.setForegroundResId(resId);
+        }
+    }
+
+    @Override
+    public void setForegroundTintList(int resId) {
+        if (mForegroundHelper != null) {
+            mForegroundHelper.setForegroundTintList(resId, null);
+        }
+    }
+
+    @Override
+    public void setForegroundTintList(int resId, PorterDuff.Mode mode) {
+        if (mForegroundHelper != null) {
+            mForegroundHelper.setForegroundTintList(resId, mode);
+        }
     }
 
     @Override
@@ -93,6 +119,9 @@ public class TintGridLayout extends GridLayout implements Tintable, AppCompatBac
     public void tint() {
         if (mBackgroundHelper != null) {
             mBackgroundHelper.tint();
+        }
+        if (mForegroundHelper != null) {
+            mForegroundHelper.tint();
         }
     }
 }

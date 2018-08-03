@@ -2,19 +2,21 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
-version = "0.1.1"
+version = "0.1.9-beta3"
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
     defaultConfig {
-        minSdkVersion 15
-        targetSdkVersion 23
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName version
     }
-
+    sourceSets{
+        main.res.srcDirs 'res', 'res-public'
+    }
     buildTypes {
         release {
             minifyEnabled false
@@ -93,9 +95,9 @@ bintray {
 
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    compile 'com.android.support:appcompat-v7:23.4.0'
-    compile 'com.android.support:design:23.4.0'
-    compile "com.android.support:gridlayout-v7:23.4.0"
+    implementation "com.android.support:design:${rootProject.ext.supportVersion}"
+    implementation "com.android.support.constraint:constraint-layout:${rootProject.ext.constraintVersion}"
+
 }

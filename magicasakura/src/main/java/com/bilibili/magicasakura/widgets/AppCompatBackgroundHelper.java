@@ -35,13 +35,7 @@ import com.bilibili.magicasakura.utils.TintManager;
  * @author xyczero617@gmail.com
  * @time 15/9/26
  */
-public class AppCompatBackgroundHelper extends AppCompatBaseHelper {
-
-    private static final int[] ATTR = {
-            android.R.attr.background,
-            R.attr.backgroundTint,
-            R.attr.backgroundTintMode
-    };
+class AppCompatBackgroundHelper extends AppCompatBaseHelper<View> {
 
     private TintInfo mBackgroundTintInfo;
 
@@ -50,7 +44,7 @@ public class AppCompatBackgroundHelper extends AppCompatBaseHelper {
 
     private int mPaddingLeft, mPaddingTop, mPaddingRight, mPaddingBottom;
 
-    public AppCompatBackgroundHelper(View view, TintManager tintManager) {
+    AppCompatBackgroundHelper(View view, TintManager tintManager) {
         super(view, tintManager);
     }
 
@@ -58,15 +52,15 @@ public class AppCompatBackgroundHelper extends AppCompatBaseHelper {
     @Override
     void loadFromAttribute(AttributeSet attrs, int defStyleAttr) {
         initPadding();
-        TypedArray array = mView.getContext().obtainStyledAttributes(attrs, ATTR, defStyleAttr, 0);
-        if (array.hasValue(1)) {
-            mBackgroundTintResId = array.getResourceId(1, 0);
-            if (array.hasValue(2)) {
-                setSupportBackgroundTintMode(DrawableUtils.parseTintMode(array.getInt(2, 0), null));
+        TypedArray array = mView.getContext().obtainStyledAttributes(attrs, R.styleable.TintViewBackgroundHelper, defStyleAttr, 0);
+        if (array.hasValue(R.styleable.TintViewBackgroundHelper_backgroundTint)) {
+            mBackgroundTintResId = array.getResourceId(R.styleable.TintViewBackgroundHelper_backgroundTint, 0);
+            if (array.hasValue(R.styleable.TintViewBackgroundHelper_backgroundTintMode)) {
+                setSupportBackgroundTintMode(DrawableUtils.parseTintMode(array.getInt(R.styleable.TintViewBackgroundHelper_backgroundTintMode, 0), null));
             }
             setSupportBackgroundTint(mBackgroundTintResId);
         } else {
-            Drawable drawable = mTintManager.getDrawable(mBackgroundResId = array.getResourceId(0, 0));
+            Drawable drawable = mTintManager.getDrawable(mBackgroundResId = array.getResourceId(R.styleable.TintViewBackgroundHelper_android_background, 0));
             if (drawable != null) {
                 setBackgroundDrawable(drawable);
             }

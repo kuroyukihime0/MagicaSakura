@@ -134,13 +134,13 @@ public class TintProgressDialog extends AlertDialog implements Handler.Callback 
             mViewUpdateHandler = new Handler(this);
 
             View view = inflater.inflate(R.layout.dialog_alert_progress, null);
-            mProgress = (ProgressBar) view.findViewById(android.R.id.progress);
+            mProgress = (ProgressBar) view.findViewById(R.id.progress);
             mProgressNumber = (TextView) view.findViewById(R.id.progress_number);
             mProgressPercent = (TextView) view.findViewById(R.id.progress_percent);
             setView(view);
         } else {
             View view = inflater.inflate(R.layout.dialog_progress, null);
-            mProgress = (ProgressBar) view.findViewById(android.R.id.progress);
+            mProgress = (ProgressBar) view.findViewById(R.id.progress);
             mMessageView = (TextView) view.findViewById(R.id.message);
             setView(view);
         }
@@ -181,18 +181,20 @@ public class TintProgressDialog extends AlertDialog implements Handler.Callback 
         int max = mProgress.getMax();
         if (mProgressNumberFormat != null) {
             String format = mProgressNumberFormat;
+            mProgressNumber.setVisibility(View.VISIBLE);
             mProgressNumber.setText(String.format(format, progress, max));
         } else {
-            mProgressNumber.setText("");
+            mProgressNumber.setVisibility(View.GONE);
         }
         if (mProgressPercentFormat != null) {
             double percent = (double) progress / (double) max;
             SpannableString tmp = new SpannableString(mProgressPercentFormat.format(percent));
             tmp.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
                     0, tmp.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            mProgressPercent.setVisibility(View.VISIBLE);
             mProgressPercent.setText(tmp);
         } else {
-            mProgressPercent.setText("");
+            mProgressPercent.setVisibility(View.GONE);
         }
         return true;
     }

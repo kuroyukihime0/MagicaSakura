@@ -1,10 +1,11 @@
 ![cover](https://raw.githubusercontent.com/xyczero/MagicaSakura/master/screenshot/magicasakura_cover.png)
 
 ## MagicaSakura
+[ ![Download](https://api.bintray.com/packages/xyczero/maven/MagicaSakura/images/download.svg?version=0.1.8) ](https://bintray.com/xyczero/maven/MagicaSakura/0.1.8/link)
 
 MagicaSakura is an Android multi theme library which supporting both daily colorful theme and night theme.
 
-##Feature
+## Feature
 
 >1. Support both the daily colorful theme and the night theme.
 
@@ -16,28 +17,35 @@ MagicaSakura is an Android multi theme library which supporting both daily color
 
 >5. Offer backward-compatible versions of the Android system that can be used with 4.0.3 or higher.
 
->6. Easy to integrate to your app. 
+>6. Support Vector Drawable with appcompat-v7.
 
-##Demo
+>7. Easy to integrate to your app.
+
+## Demo
 
 ![ScreenShot.gif](https://github.com/xyczero/MagicaSakura/blob/master/screenshot/magicasakura.gif)
+ 
+ You can download the lastest sample apk from Google Play.
 
-##Gradle Dependency
+<a href="https://play.google.com/store/apps/details?id=com.bilibili.magicasakurademo"><img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" height="60" data-canonical-src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" style="max-width:100%;"></a>
+ 
+
+## Gradle Dependency
 ```
-compile 'com.bilibili:magicasakura:0.1.1@aar'
+compile 'com.bilibili:magicasakura:0.1.8@aar'
 ```
 
-##Maven Dependency
+## Maven Dependency
 ```
 <dependency>
   <groupId>com.bilibili</groupId>
   <artifactId>magicasakura</artifactId>
-  <version>0.1.1</version>
+  <version>0.1.8</version>
   <type>aar</type>
 </dependency>
 ```
 
-##Usage
+## Usage
  
   
  - **STEP1** : 
@@ -181,8 +189,9 @@ compile 'com.bilibili:magicasakura:0.1.1@aar'
     | button     | compoundButtonTint    |  compoundButtonTintMode  |
     | drawableXxx     | drawableXxxTint    |  drawableXxxTintMode  |
     | progress     | progressTint,progressIndeterminateTint    |    |
-    
-  
+    | track     | trackTint    |  trackTintMode  |
+    | thumb     | thumbTint    |  thumbTintMode  |
+
   - Java code
     TintXXX widgets can also be tinted in java code. The way of tinting drawable is the same as android native methods.
     
@@ -236,10 +245,13 @@ compile 'com.bilibili:magicasakura:0.1.1@aar'
   
   About to switch night theme, when the version of your android support library is below 23.2.0, you can call the method of ThemeUtils.updateNightMode to switch in the night and daily theme, and when the version is above 23.2.0, you can use android native method in android support library.
 
-##Download
-[Demo Download here](http://7xr9x5.com1.z0.glb.clouddn.com/magicasrkura_sample-debug.apk)
+## Download
+[Demo Download here](http://7xr9x5.com1.z0.glb.clouddn.com/magicasrkura_sample-release.apk)
 
-##License
+## TODO
+- Refactor part of the code including TintManager...
+
+## License
 
 Copyright 2016 Bilibili
 

@@ -16,22 +16,32 @@
 
 package com.bilibili.magicasakura.widgets;
 
+import android.annotation.TargetApi;
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.support.annotation.ColorRes;
 import android.util.AttributeSet;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.widget.EditText;
 
+import com.bilibili.magicasakura.utils.InputConnectionImpl;
 import com.bilibili.magicasakura.utils.TintManager;
 
 /**
  * @author xyczero617@gmail.com
  * @time 16/2/1
  */
+@SuppressLint("AppCompatCustomView")
 public class TintEditText extends EditText implements Tintable, AppCompatBackgroundHelper.BackgroundExtensible,
-        AppCompatCompoundDrawableHelper.CompoundDrawableExtensible {
+        AppCompatCompoundDrawableHelper.CompoundDrawableExtensible, AppCompatTextHelper.TextExtensible {
     private AppCompatBackgroundHelper mBackgroundHelper;
     private AppCompatCompoundDrawableHelper mCompoundDrawableHelper;
+    private AppCompatTextHelper mTextHelper;
 
     public TintEditText(Context context) {
         this(context, null);
@@ -48,11 +58,47 @@ public class TintEditText extends EditText implements Tintable, AppCompatBackgro
         }
         TintManager tintManager = TintManager.get(getContext());
 
+        mTextHelper = new AppCompatTextHelper(this, tintManager);
+        mTextHelper.loadFromAttribute(attrs, defStyleAttr);
+
         mBackgroundHelper = new AppCompatBackgroundHelper(this, tintManager);
         mBackgroundHelper.loadFromAttribute(attrs, defStyleAttr);
 
         mCompoundDrawableHelper = new AppCompatCompoundDrawableHelper(this, tintManager);
         mCompoundDrawableHelper.loadFromAttribute(attrs, defStyleAttr);
+    }
+
+    @Override
+    public void setTextColor(int color) {
+        super.setTextColor(color);
+        if (mTextHelper != null) {
+            mTextHelper.setTextColor();
+        }
+    }
+
+    @Override
+    public void setTextColor(ColorStateList colors) {
+        super.setTextColor(colors);
+        if (mTextHelper != null) {
+            mTextHelper.setTextColor();
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    @Override
+    public void setTextAppearance(int resId) {
+        super.setTextAppearance(resId);
+        if (mTextHelper != null) {
+            mTextHelper.setTextAppearanceForTextColor(resId);
+        }
+    }
+
+    @Override
+    public void setTextAppearance(Context context, int resId) {
+        super.setTextAppearance(context, resId);
+        if (mTextHelper != null) {
+            mTextHelper.setTextAppearanceForTextColor(resId);
+        }
     }
 
     @Override
@@ -120,12 +166,31 @@ public class TintEditText extends EditText implements Tintable, AppCompatBackgro
     }
 
     @Override
+    public void setTextColorById(@ColorRes int colorId) {
+        if (mTextHelper != null) {
+            mTextHelper.setTextColorById(colorId);
+        }
+    }
+
+    @Override
     public void tint() {
+        if (mTextHelper != null) {
+            mTextHelper.tint();
+        }
         if (mBackgroundHelper != null) {
             mBackgroundHelper.tint();
         }
         if (mCompoundDrawableHelper != null) {
             mCompoundDrawableHelper.tint();
         }
+    }
+
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        InputConnection conn = super.onCreateInputConnection(outAttrs);
+        if (conn != null) {
+            return new InputConnectionImpl(conn, false);
+        }
+        return null;
     }
 }

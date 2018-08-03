@@ -35,34 +35,29 @@ import com.bilibili.magicasakura.utils.TintManager;
  * @author xyczero617@gmail.com
  * @time 16/4/7
  */
-public class AppCompatForegroundHelper extends AppCompatBaseHelper {
-    private static final int[] ATTR = {
-            android.R.attr.foreground,
-            R.attr.foregroundTint,
-            R.attr.foregroundTintMode
-    };
+class AppCompatForegroundHelper extends AppCompatBaseHelper<View> {
 
     private TintInfo mForegroundTintInfo;
 
     private int mForegroundResId;
     private int mForegroundTintResId;
 
-    public AppCompatForegroundHelper(View view, TintManager tintManager) {
+    AppCompatForegroundHelper(View view, TintManager tintManager) {
         super(view, tintManager);
     }
 
     @SuppressWarnings("ResourceType")
     @Override
     void loadFromAttribute(AttributeSet attrs, int defStyleAttr) {
-        TypedArray array = mView.getContext().obtainStyledAttributes(attrs, ATTR, defStyleAttr, 0);
-        if (array.hasValue(1)) {
-            mForegroundResId = array.getResourceId(1, 0);
-            if (array.hasValue(2)) {
-                setSupportForegroundTintMode(DrawableUtils.parseTintMode(array.getInt(2, 0), null));
+        TypedArray array = mView.getContext().obtainStyledAttributes(attrs, R.styleable.TintViewForegroundHelper, defStyleAttr, 0);
+        if (array.hasValue(R.styleable.TintViewForegroundHelper_foregroundTint)) {
+            mForegroundTintResId = array.getResourceId(R.styleable.TintViewForegroundHelper_foregroundTint, 0);
+            if (array.hasValue(R.styleable.TintViewForegroundHelper_foregroundTintMode)) {
+                setSupportForegroundTintMode(DrawableUtils.parseTintMode(array.getInt(R.styleable.TintViewForegroundHelper_foregroundTintMode, 0), null));
             }
             setSupportForegroundTint(mForegroundTintResId);
         } else {
-            Drawable drawable = mTintManager.getDrawable(mForegroundResId = array.getResourceId(0, 0));
+            Drawable drawable = mTintManager.getDrawable(mForegroundResId = array.getResourceId(R.styleable.TintViewForegroundHelper_android_foreground, 0));
             if (drawable != null) {
                 setForegroundDrawable(drawable);
             }

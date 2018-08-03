@@ -35,33 +35,28 @@ import com.bilibili.magicasakura.utils.TintManager;
  * @author xyczero617@gmail.com
  * @time 15/11/23
  */
-public class AppCompatCompoundButtonHelper extends AppCompatBaseHelper {
-    private static final int[] ATTRS = {
-            android.R.attr.button,
-            R.attr.compoundButtonTint,
-            R.attr.compoundButtonTintMode
-    };
+class AppCompatCompoundButtonHelper extends AppCompatBaseHelper<CompoundButton> {
 
     private TintInfo mCompoundButtonTintInfo;
     private int mCompoundButtonResId;
     private int mCompoundButtonTintResId;
 
-    public AppCompatCompoundButtonHelper(CompoundButton view, TintManager tintManager) {
+    AppCompatCompoundButtonHelper(CompoundButton view, TintManager tintManager) {
         super(view, tintManager);
     }
 
     @SuppressWarnings("ResourceType")
     @Override
     void loadFromAttribute(AttributeSet attrs, int defStyleAttr) {
-        TypedArray array = mView.getContext().obtainStyledAttributes(attrs, ATTRS, defStyleAttr, 0);
-        if (array.hasValue(1)) {
-            mCompoundButtonTintResId = array.getResourceId(1, 0);
-            if (array.hasValue(2)) {
-                setSupportButtonDrawableTintMode(DrawableUtils.parseTintMode(array.getInt(2, 0), null));
+        TypedArray array = mView.getContext().obtainStyledAttributes(attrs, R.styleable.TintCompoundButtonHelper, defStyleAttr, 0);
+        if (array.hasValue(R.styleable.TintCompoundButtonHelper_compoundButtonTint)) {
+            mCompoundButtonTintResId = array.getResourceId(R.styleable.TintCompoundButtonHelper_compoundButtonTint, 0);
+            if (array.hasValue(R.styleable.TintCompoundButtonHelper_compoundButtonTintMode)) {
+                setSupportButtonDrawableTintMode(DrawableUtils.parseTintMode(array.getInt(R.styleable.TintCompoundButtonHelper_compoundButtonTintMode, 0), null));
             }
             setSupportButtonDrawableTint(mCompoundButtonTintResId);
         } else {
-            Drawable drawable = mTintManager.getDrawable(mCompoundButtonResId = array.getResourceId(0, 0));
+            Drawable drawable = mTintManager.getDrawable(mCompoundButtonResId = array.getResourceId(R.styleable.TintCompoundButtonHelper_android_button, 0));
             if (drawable != null) {
                 setButtonDrawable(drawable);
             }
@@ -111,7 +106,7 @@ public class AppCompatCompoundButtonHelper extends AppCompatBaseHelper {
     private void setButtonDrawable(Drawable drawable) {
         if (skipNextApply()) return;
 
-        ((CompoundButton) mView).setButtonDrawable(drawable);
+        mView.setButtonDrawable(drawable);
     }
 
     public boolean setSupportButtonDrawableTint(int resId) {
@@ -136,7 +131,7 @@ public class AppCompatCompoundButtonHelper extends AppCompatBaseHelper {
     }
 
     public boolean applySupportButtonDrawableTint() {
-        Drawable buttonDrawable = CompoundButtonCompat.getButtonDrawable((CompoundButton) mView);
+        Drawable buttonDrawable = CompoundButtonCompat.getButtonDrawable(mView);
         if (buttonDrawable != null && mCompoundButtonTintInfo != null && mCompoundButtonTintInfo.mHasTintList) {
             buttonDrawable = DrawableCompat.wrap(buttonDrawable);
             buttonDrawable = buttonDrawable.mutate();
@@ -170,7 +165,7 @@ public class AppCompatCompoundButtonHelper extends AppCompatBaseHelper {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
             // Before JB-MR1 the button drawable wasn't taken into account for padding. We'll
             // workaround that here
-            Drawable buttonDrawable = CompoundButtonCompat.getButtonDrawable((CompoundButton) mView);
+            Drawable buttonDrawable = CompoundButtonCompat.getButtonDrawable(mView);
             if (buttonDrawable != null) {
                 superValue += buttonDrawable.getIntrinsicWidth();
             }

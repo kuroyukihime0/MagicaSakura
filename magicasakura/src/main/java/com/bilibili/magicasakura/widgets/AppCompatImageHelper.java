@@ -19,11 +19,9 @@ package com.bilibili.magicasakura.widgets;
 import android.content.res.TypedArray;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.util.AttributeSet;
-import android.view.View;
 import android.widget.ImageView;
 
 import com.bilibili.magicasakura.R;
@@ -35,33 +33,35 @@ import com.bilibili.magicasakura.utils.TintManager;
  * @author xyczero617@gmail.com
  * @time 15/11/15
  */
-public class AppCompatImageHelper extends AppCompatBaseHelper {
-    public static final int[] ATTRS = {
-            android.R.attr.src,
-            R.attr.imageTint,
-            R.attr.imageTintMode
-    };
+class AppCompatImageHelper extends AppCompatBaseHelper<ImageView> {
 
     private TintInfo mImageTintInfo;
     private int mImageResId;
     private int mImageTintResId;
 
-    public AppCompatImageHelper(View view, TintManager tintManager) {
+    AppCompatImageHelper(ImageView view, TintManager tintManager) {
         super(view, tintManager);
     }
 
     @SuppressWarnings("ResourceType")
     @Override
     void loadFromAttribute(AttributeSet attrs, int defStyleAttr) {
-        TypedArray array = mView.getContext().obtainStyledAttributes(attrs, ATTRS, defStyleAttr, 0);
-        if (array.hasValue(1)) {
-            mImageTintResId = array.getResourceId(1, 0);
-            if (array.hasValue(2)) {
-                setSupportImageTintMode(DrawableUtils.parseTintMode(array.getInt(2, 0), null));
+        TypedArray array = mView.getContext().obtainStyledAttributes(attrs, R.styleable.TintImageHelper, defStyleAttr, 0);
+        // first resolve srcCompat due to not extending by AppCompatImageView
+        if (mView.getDrawable() == null) {
+            Drawable image = mTintManager.getDrawable(mImageResId = array.getResourceId(R.styleable.TintImageHelper_srcCompat, 0));
+            if (image != null) {
+                setImageDrawable(image);
+            }
+        }
+        if (array.hasValue(R.styleable.TintImageHelper_imageTint)) {
+            mImageTintResId = array.getResourceId(R.styleable.TintImageHelper_imageTint, 0);
+            if (array.hasValue(R.styleable.TintImageHelper_imageTintMode)) {
+                setSupportImageTintMode(DrawableUtils.parseTintMode(array.getInt(R.styleable.TintImageHelper_imageTintMode, 0), null));
             }
             setSupportImageTint(mImageTintResId);
-        } else {
-            Drawable image = mTintManager.getDrawable(mImageResId = array.getResourceId(0, 0));
+        } else if (mImageResId == 0) {
+            Drawable image = mTintManager.getDrawable(mImageResId = array.getResourceId(R.styleable.TintImageHelper_android_src, 0));
             if (image != null) {
                 setImageDrawable(image);
             }
@@ -108,7 +108,7 @@ public class AppCompatImageHelper extends AppCompatBaseHelper {
     private void setImageDrawable(Drawable drawable) {
         if (skipNextApply()) return;
 
-        ((ImageView) mView).setImageDrawable(drawable);
+        mView.setImageDrawable(drawable);
     }
 
     private boolean setSupportImageTint(int resId) {
@@ -133,23 +133,23 @@ public class AppCompatImageHelper extends AppCompatBaseHelper {
     }
 
     private boolean applySupportImageTint() {
-        Drawable image = ((ImageView) mView).getDrawable();
+        Drawable image = mView.getDrawable();
         if (image != null && mImageTintInfo != null && mImageTintInfo.mHasTintList) {
-            image.mutate();
-            image = DrawableCompat.wrap(image);
+            Drawable tintDrawable = image.mutate();
+            tintDrawable = DrawableCompat.wrap(tintDrawable);
             if (mImageTintInfo.mHasTintList) {
-                DrawableCompat.setTintList(image, mImageTintInfo.mTintList);
+                DrawableCompat.setTintList(tintDrawable, mImageTintInfo.mTintList);
             }
             if (mImageTintInfo.mHasTintMode) {
-                DrawableCompat.setTintMode(image, mImageTintInfo.mTintMode);
+                DrawableCompat.setTintMode(tintDrawable, mImageTintInfo.mTintMode);
             }
-            if (image.isStateful()) {
-                image.setState(mView.getDrawableState());
+            if (tintDrawable.isStateful()) {
+                tintDrawable.setState(mView.getDrawableState());
             }
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
-                setImageDrawable(null);
+            setImageDrawable(tintDrawable);
+            if (image == tintDrawable) {
+                tintDrawable.invalidateSelf();
             }
-            setImageDrawable(image);
             return true;
         }
         return false;

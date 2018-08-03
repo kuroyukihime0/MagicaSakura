@@ -21,12 +21,14 @@ import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
+import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.annotation.RestrictTo;
 import android.util.AttributeSet;
 import android.util.StateSet;
 import android.util.TypedValue;
@@ -39,13 +41,14 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 
+import static android.support.annotation.RestrictTo.Scope.LIBRARY;
+
 /**
  * @author xyczero617@gmail.com
  * @time 16/2/22
  */
-public abstract class DrawableUtils {
-
-    protected abstract Drawable inflateDrawable(Context context, XmlPullParser parser, AttributeSet attrs) throws IOException, XmlPullParserException;
+@RestrictTo(LIBRARY)
+public final class DrawableUtils {
 
     static Drawable createDrawable(Context context, int resId) {
         if (resId <= 0) return null;
@@ -57,7 +60,7 @@ public abstract class DrawableUtils {
 
         if (typedValue.type >= TypedValue.TYPE_FIRST_COLOR_INT
                 && typedValue.type <= TypedValue.TYPE_LAST_COLOR_INT) {
-            dr = new ColorDrawable(com.bilibili.magicasakura.utils.ThemeUtils.replaceColorById(context, resId));
+            dr = new ColorDrawable(ThemeUtils.replaceColorById(context, resId));
         } else {
             try {
                 if (typedValue.string != null && typedValue.string.toString().endsWith("xml")) {
@@ -73,7 +76,7 @@ public abstract class DrawableUtils {
                         throw new XmlPullParserException("No start tag found");
                     }
 
-                    dr = createFromXmlInner(context, rp, attrs);
+                    dr = createFromXmlInner(context, rp, attrs, resId);
                     rp.close();
                 }
             } catch (IOException e) {
@@ -86,23 +89,33 @@ public abstract class DrawableUtils {
     }
 
     static Drawable createFromXmlInner(Context context, XmlPullParser parser, AttributeSet attrs) throws IOException, XmlPullParserException {
-        final com.bilibili.magicasakura.utils.DrawableUtils drawableUtils;
+        return createFromXmlInner(context, parser, attrs, 0);
+    }
+
+    static Drawable createFromXmlInner(Context context, XmlPullParser parser, AttributeSet attrs, int resId) throws IOException, XmlPullParserException {
+        final DrawableInflateDelegate delegate;
 
         final String name = parser.getName();
         switch (name) {
             case "selector":
-                drawableUtils = new com.bilibili.magicasakura.utils.StateListDrawableUtils();
+                delegate = new StateListDrawableInflateImpl();
                 break;
             case "shape":
-                drawableUtils = new com.bilibili.magicasakura.utils.GradientDrawableUtils();
+                delegate = new GradientDrawableInflateImpl();
                 break;
             case "layer-list":
-                drawableUtils = new com.bilibili.magicasakura.utils.LayerDrawableUtils();
+                delegate = new LayerDrawableInflateImpl();
+                break;
+            case "ripple":
+                delegate = new RippleDrawableInflateImpl();
+                break;
+            case "vector":
+                delegate = new VectorDrawableInflateImpl(resId);
                 break;
             default:
-                drawableUtils = null;
+                delegate = null;
         }
-        return drawableUtils == null ? null : drawableUtils.inflateDrawable(context, parser, attrs);
+        return delegate == null ? null : delegate.inflateDrawable(context, parser, attrs);
     }
 
     /**
@@ -111,7 +124,7 @@ public abstract class DrawableUtils {
      * @param attrs The attribute set.
      * @return An array of state_ attributes.
      */
-    protected int[] extractStateSet(AttributeSet attrs) {
+    static int[] extractStateSet(AttributeSet attrs) {
         int j = 0;
         final int numAttrs = attrs.getAttributeCount();
         int[] states = new int[numAttrs];
@@ -137,7 +150,7 @@ public abstract class DrawableUtils {
 
     static int getAttrTintColor(Context context, AttributeSet attrs, int attr, int defaultValue) {
         final TypedArray a = obtainAttributes(context.getResources(), context.getTheme(), attrs, new int[]{attr});
-        final int tintColor = com.bilibili.magicasakura.utils.ThemeUtils.replaceColor(context, a.getColor(0, defaultValue));
+        final int tintColor = ThemeUtils.replaceColor(context, a.getColor(0, defaultValue));
         a.recycle();
         return tintColor;
     }
@@ -157,8 +170,8 @@ public abstract class DrawableUtils {
     }
 
     static ColorFilter getAttrColorFilter(Context context, AttributeSet attrs, int tintAttr, int tintModeAttr) {
-        final int color = getTintColor(context, attrs, tintAttr, -1);
-        if (color == -1) return null;
+        final int color = getAttrColor(context, attrs, tintAttr, Color.TRANSPARENT);
+        if (color == Color.TRANSPARENT) return null;
         return new PorterDuffColorFilter(color, getTintMode(context, attrs, tintModeAttr));
     }
 
@@ -171,18 +184,6 @@ public abstract class DrawableUtils {
         final ColorStateList cls = TintManager.get(context).getColorStateList(a.getResourceId(0, 0));
         a.recycle();
         return cls;
-    }
-
-    static int getTintColor(Context context, AttributeSet attrs, int tintAttr, int defaultValue) {
-        Resources res = context.getResources();
-        TypedArray a = obtainAttributes(res, context.getTheme(), attrs, new int[]{tintAttr});
-        if (!a.hasValue(0)) {
-            a.recycle();
-            return defaultValue;
-        }
-        final int color = com.bilibili.magicasakura.utils.ThemeUtils.getColor(context, res.getColor(a.getResourceId(0, 0)));
-        a.recycle();
-        return color;
     }
 
     static PorterDuff.Mode getTintMode(Context context, AttributeSet attrs, int tintModeAttr) {
@@ -206,7 +207,7 @@ public abstract class DrawableUtils {
     static int getAttrColor(Context context, AttributeSet attrs, int attr, int defaultValue) {
         TypedArray a = obtainAttributes(context.getResources(), context.getTheme(), attrs, new int[]{attr});
         final int colorId = a.getResourceId(0, 0);
-        final int value = colorId != 0 ? com.bilibili.magicasakura.utils.ThemeUtils.replaceColorById(context, colorId) : com.bilibili.magicasakura.utils.ThemeUtils.replaceColor(context, a.getColor(0, defaultValue));
+        final int value = colorId != 0 ? ThemeUtils.replaceColorById(context, colorId) : ThemeUtils.replaceColor(context, a.getColor(0, defaultValue));
         a.recycle();
         return value;
     }

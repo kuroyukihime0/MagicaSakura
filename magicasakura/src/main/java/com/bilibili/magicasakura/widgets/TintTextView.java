@@ -16,6 +16,7 @@
 
 package com.bilibili.magicasakura.widgets;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -24,17 +25,21 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.annotation.ColorRes;
 import android.util.AttributeSet;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.widget.TextView;
 
+import com.bilibili.magicasakura.utils.InputConnectionImpl;
 import com.bilibili.magicasakura.utils.TintManager;
 
 /**
  * @author xyczero617@gmail.com
  * @time 15/9/14
  */
+@SuppressLint("AppCompatCustomView")
 public class TintTextView extends TextView implements Tintable, AppCompatBackgroundHelper.BackgroundExtensible,
-        AppCompatCompoundDrawableHelper.CompoundDrawableExtensible, com.bilibili.magicasakura.widgets.AppCompatTextHelper.TextExtensible {
-    private com.bilibili.magicasakura.widgets.AppCompatTextHelper mTextHelper;
+        AppCompatCompoundDrawableHelper.CompoundDrawableExtensible, AppCompatTextHelper.TextExtensible {
+    private AppCompatTextHelper mTextHelper;
     private AppCompatBackgroundHelper mBackgroundHelper;
     private AppCompatCompoundDrawableHelper mCompoundDrawableHelper;
 
@@ -174,7 +179,6 @@ public class TintTextView extends TextView implements Tintable, AppCompatBackgro
         }
     }
 
-
     @Override
     public void tint() {
         if (mTextHelper != null) {
@@ -186,5 +190,14 @@ public class TintTextView extends TextView implements Tintable, AppCompatBackgro
         if (mCompoundDrawableHelper != null) {
             mCompoundDrawableHelper.tint();
         }
+    }
+
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        InputConnection conn = super.onCreateInputConnection(outAttrs);
+        if (conn != null) {
+            return new InputConnectionImpl(conn, false);
+        }
+        return null;
     }
 }

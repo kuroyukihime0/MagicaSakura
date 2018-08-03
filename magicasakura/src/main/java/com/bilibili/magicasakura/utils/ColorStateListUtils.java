@@ -21,6 +21,7 @@ import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.graphics.Color;
+import android.support.annotation.RestrictTo;
 import android.support.v4.graphics.ColorUtils;
 import android.util.AttributeSet;
 import android.util.StateSet;
@@ -33,11 +34,14 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.util.LinkedList;
 
+import static android.support.annotation.RestrictTo.Scope.LIBRARY;
+
 /**
  * @author xyczero617@gmail.com
  * @time 16/2/22
  */
-public class ColorStateListUtils {
+@RestrictTo(LIBRARY)
+final class ColorStateListUtils {
 
     static ColorStateList createColorStateList(Context context, int resId) {
         if (resId <= 0) return null;
@@ -47,6 +51,9 @@ public class ColorStateListUtils {
         ColorStateList cl = null;
         if (value.type >= TypedValue.TYPE_FIRST_COLOR_INT
                 && value.type <= TypedValue.TYPE_LAST_COLOR_INT) {
+            //Assume that "color/theme_color_primary" and "color/theme_color_profile" have the same color value;
+            //However, "color/theme_color_primary" need to replace by themeId, "color/theme_color_profile" not.
+            //If use value.data may cause "color/theme_color_profile" still been replaced by themeId
             cl = ColorStateList.valueOf(ThemeUtils.replaceColorById(context, value.resourceId));
         } else {
             final String file = value.string.toString();
@@ -105,7 +112,8 @@ public class ColorStateListUtils {
             }
 
             TypedArray a1 = context.obtainStyledAttributes(attrs, new int[]{android.R.attr.color});
-            final int baseColor = com.bilibili.magicasakura.utils.ThemeUtils.replaceColorById(context, a1.getResourceId(0, Color.MAGENTA));
+            final int value = a1.getResourceId(0, Color.MAGENTA);
+            final int baseColor = value == Color.MAGENTA ? Color.MAGENTA : ThemeUtils.replaceColorById(context, value);
             a1.recycle();
             TypedArray a2 = context.obtainStyledAttributes(attrs, new int[]{android.R.attr.alpha});
             final float alphaMod = a2.getFloat(0, 1.0f);

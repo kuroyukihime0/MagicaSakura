@@ -16,6 +16,7 @@
 
 package com.bilibili.magicasakura.utils;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -235,7 +236,7 @@ public class ThemeUtils {
     public static boolean isSkipAnimatedSelector() {
         if (!hasRecordedVersion) {
             final String sdkVersion = Build.VERSION.RELEASE;
-            isSkipAnimatedSelector = !Build.UNKNOWN.equals(sdkVersion) && "5.0".compareTo(sdkVersion) <= 0 && "5.1".compareTo(sdkVersion) >0;
+            isSkipAnimatedSelector = !Build.UNKNOWN.equals(sdkVersion) && "5.0".compareTo(sdkVersion) <= 0 && "5.1".compareTo(sdkVersion) > 0;
             hasRecordedVersion = true;
         }
         return isSkipAnimatedSelector;
@@ -266,9 +267,10 @@ public class ThemeUtils {
         return false;
     }
 
+    @SuppressLint("RestrictedApi")
     public static Drawable getWrapperDrawable(Drawable drawable) {
-        if (drawable instanceof android.support.v4.graphics.drawable.DrawableWrapper) {
-            return ((android.support.v4.graphics.drawable.DrawableWrapper) drawable).getWrappedDrawable();
+        if (drawable instanceof android.support.v4.graphics.drawable.WrappedDrawable) {
+            return ((android.support.v4.graphics.drawable.WrappedDrawable) drawable).getWrappedDrawable();
         } else if (drawable instanceof android.support.v7.graphics.drawable.DrawableWrapper) {
             return ((android.support.v7.graphics.drawable.DrawableWrapper) drawable).getWrappedDrawable();
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && drawable instanceof android.graphics.drawable.DrawableWrapper) {
@@ -305,7 +307,7 @@ public class ThemeUtils {
         return resource;
     }
 
-    static com.bilibili.magicasakura.utils.TintInfo parseColorStateList(ColorStateList origin) {
+    static TintInfo parseColorStateList(ColorStateList origin) {
         if (origin == null) return null;
 
         boolean hasDisable = false;
@@ -351,7 +353,7 @@ public class ThemeUtils {
         }
 
         if (colorList.size() > 1) {
-            return new com.bilibili.magicasakura.utils.TintInfo(stateList, colorList);
+            return new TintInfo(stateList, colorList);
         } else {
             return null;
         }
@@ -417,8 +419,10 @@ public class ThemeUtils {
         }
     }
 
-    private static Field mRecycler;
-    private static Method mClearMethod;
+    private static Field sRecycler;
+    private static Method sRecycleViewClearMethod;
+    private static Field sRecyclerBin;
+    private static Method sListViewClearMethod;
 
     private static void refreshView(View view, ExtraRefreshable extraRefreshable) {
         if (view == null) return;
@@ -436,6 +440,28 @@ public class ThemeUtils {
                 extraRefreshable.refreshSpecificView(view);
             }
             if (view instanceof AbsListView) {
+                try {
+                    if (sRecyclerBin == null) {
+                        sRecyclerBin = AbsListView.class.getDeclaredField("mRecycler");
+                        sRecyclerBin.setAccessible(true);
+                    }
+                    if (sListViewClearMethod == null) {
+                        sListViewClearMethod = Class.forName("android.widget.AbsListView$RecycleBin")
+                                .getDeclaredMethod("clear");
+                        sListViewClearMethod.setAccessible(true);
+                    }
+                    sListViewClearMethod.invoke(sRecyclerBin.get(view));
+                } catch (NoSuchFieldException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                } catch (NoSuchMethodException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
                 ListAdapter adapter = ((AbsListView) view).getAdapter();
                 while (adapter instanceof WrapperListAdapter) {
                     adapter = ((WrapperListAdapter) adapter).getWrappedAdapter();
@@ -446,16 +472,16 @@ public class ThemeUtils {
             }
             if (view instanceof RecyclerView) {
                 try {
-                    if (mRecycler == null) {
-                        mRecycler = RecyclerView.class.getDeclaredField("mRecycler");
-                        mRecycler.setAccessible(true);
+                    if (sRecycler == null) {
+                        sRecycler = RecyclerView.class.getDeclaredField("mRecycler");
+                        sRecycler.setAccessible(true);
                     }
-                    if (mClearMethod == null) {
-                        mClearMethod = Class.forName("android.support.v7.widget.RecyclerView$Recycler")
+                    if (sRecycleViewClearMethod == null) {
+                        sRecycleViewClearMethod = Class.forName("android.support.v7.widget.RecyclerView$Recycler")
                                 .getDeclaredMethod("clear");
-                        mClearMethod.setAccessible(true);
+                        sRecycleViewClearMethod.setAccessible(true);
                     }
-                    mClearMethod.invoke(mRecycler.get(view));
+                    sRecycleViewClearMethod.invoke(sRecycler.get(view));
                 } catch (NoSuchMethodException e) {
                     e.printStackTrace();
                 } catch (IllegalAccessException e) {
@@ -491,11 +517,11 @@ public class ThemeUtils {
     }
 
     static @ColorInt int replaceColorById(Context context, @ColorRes int colorId) {
-        return mSwitchColor == null ? Color.TRANSPARENT : mSwitchColor.replaceColorById(context, colorId);
+        return mSwitchColor == null ? context.getResources().getColor(colorId) : mSwitchColor.replaceColorById(context, colorId);
     }
 
     static @ColorInt int replaceColor(Context context, @ColorInt int color) {
-        return mSwitchColor == null ? Color.TRANSPARENT : mSwitchColor.replaceColor(context, color);
+        return mSwitchColor == null ? color : mSwitchColor.replaceColor(context, color);
     }
 
     public interface switchColor {

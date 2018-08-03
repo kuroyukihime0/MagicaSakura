@@ -1,22 +1,5 @@
-/*
- * Copyright (C) 2016 Bilibili
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.bilibili.magicasakura.widgets;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -28,37 +11,71 @@ import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.CompoundButtonCompat;
+import android.support.v7.widget.SwitchCompat;
 import android.util.AttributeSet;
-import android.widget.CheckBox;
 
+import com.bilibili.magicasakura.R;
 import com.bilibili.magicasakura.utils.ThemeUtils;
 import com.bilibili.magicasakura.utils.TintManager;
 
 /**
  * @author xyczero617@gmail.com
- * @time 16/1/27
+ * @since 17/5/23
  */
-@SuppressLint("AppCompatCustomView")
-public class TintCheckBox extends CheckBox implements Tintable, AppCompatBackgroundHelper.BackgroundExtensible,
-        AppCompatCompoundButtonHelper.CompoundButtonExtensible, AppCompatTextHelper.TextExtensible {
+
+public class TintSwitchCompat extends SwitchCompat implements Tintable, AppCompatTextHelper.TextExtensible,
+        AppCompatBackgroundHelper.BackgroundExtensible, AppCompatSwitchHelper.SwitchCompatExtensible,
+        AppCompatCompoundButtonHelper.CompoundButtonExtensible {
+
     private AppCompatBackgroundHelper mBackgroundHelper;
     private AppCompatCompoundButtonHelper mCompoundButtonHelper;
     private AppCompatTextHelper mTextHelper;
+    private AppCompatSwitchHelper mThumbHelper;
+    private AppCompatSwitchHelper mTrackHelper;
 
-    public TintCheckBox(Context context) {
+    public TintSwitchCompat(Context context) {
         this(context, null);
     }
 
-    public TintCheckBox(Context context, AttributeSet attrs) {
-        this(context, attrs, android.R.attr.checkboxStyle);
+    public TintSwitchCompat(Context context, AttributeSet attrs) {
+        this(context, attrs, android.support.v7.appcompat.R.attr.switchStyle);
     }
 
-    public TintCheckBox(Context context, AttributeSet attrs, int defStyleAttr) {
+    public TintSwitchCompat(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         if (isInEditMode()) {
             return;
         }
-        TintManager tintManager = TintManager.get(getContext());
+        TintManager tintManager = TintManager.get(context);
+        mThumbHelper = new AppCompatSwitchHelper(this, tintManager,
+                R.styleable.TintSwitchThumb,
+                new AppCompatSwitchHelper.DrawableCallback() {
+                    @Override
+                    public void setDrawable(Drawable drawable) {
+                        setThumbDrawable(drawable);
+                    }
+
+                    @Override
+                    public Drawable getDrawable() {
+                        return getThumbDrawable();
+                    }
+                });
+        mThumbHelper.loadFromAttribute(attrs, defStyleAttr);
+
+        mTrackHelper = new AppCompatSwitchHelper(this, tintManager,
+                R.styleable.TintSwitchTrack,
+                new AppCompatSwitchHelper.DrawableCallback() {
+                    @Override
+                    public void setDrawable(Drawable drawable) {
+                        setTrackDrawable(drawable);
+                    }
+
+                    @Override
+                    public Drawable getDrawable() {
+                        return getTrackDrawable();
+                    }
+                });
+        mTrackHelper.loadFromAttribute(attrs, defStyleAttr);
 
         mBackgroundHelper = new AppCompatBackgroundHelper(this, tintManager);
         mBackgroundHelper.loadFromAttribute(attrs, defStyleAttr);
@@ -82,6 +99,104 @@ public class TintCheckBox extends CheckBox implements Tintable, AppCompatBackgro
             } catch (NoClassDefFoundError error) {
                 error.printStackTrace();
             }
+        }
+    }
+
+    @Override
+    public void setThumbDrawable(Drawable thumb) {
+        super.setThumbDrawable(thumb);
+        if (mThumbHelper != null) {
+            mThumbHelper.setDrawable();
+        }
+    }
+
+    @Override
+    public void setThumbResource(int resId) {
+        if (mThumbHelper != null) {
+            mThumbHelper.setDrawableId(resId);
+        } else {
+            super.setThumbResource(resId);
+        }
+    }
+
+    @Override
+    public void setThumbTintList(@Nullable ColorStateList tint) {
+        if (mThumbHelper != null) {
+            mThumbHelper.setDrawableTintList(tint);
+        } else {
+            super.setThumbTintList(tint);
+        }
+    }
+
+    @Override
+    public void setThumbTintMode(@Nullable PorterDuff.Mode tintMode) {
+        if (mThumbHelper != null) {
+            mThumbHelper.setDrawableTintMode(tintMode);
+        } else {
+            super.setThumbTintMode(tintMode);
+        }
+    }
+
+    @Override
+    public void setThumbTintList(int resId) {
+        if (mThumbHelper != null) {
+            mThumbHelper.setButtonDrawableTintList(resId, null);
+        }
+    }
+
+    @Override
+    public void setThumbTintList(int resId, PorterDuff.Mode mode) {
+        if (mThumbHelper != null) {
+            mThumbHelper.setButtonDrawableTintList(resId, mode);
+        }
+    }
+
+    @Override
+    public void setTrackDrawable(Drawable track) {
+        super.setTrackDrawable(track);
+        if (mTrackHelper != null) {
+            mTrackHelper.setDrawable();
+        }
+    }
+
+    @Override
+    public void setTrackResource(int resId) {
+        if (mTrackHelper != null) {
+            mTrackHelper.setDrawableId(resId);
+        } else {
+            super.setTrackResource(resId);
+        }
+    }
+
+    @Override
+    public void setTrackTintList(@Nullable ColorStateList tint) {
+        if (mTrackHelper != null) {
+            mTrackHelper.setDrawableTintList(tint);
+        } else {
+            super.setTrackTintList(tint);
+        }
+    }
+
+    @Override
+    public void setTrackTintMode(@Nullable PorterDuff.Mode tintMode) {
+        if (mTrackHelper != null) {
+            mTrackHelper.setDrawableTintMode(tintMode);
+        } else {
+            super.setTrackTintMode(tintMode);
+        }
+    }
+
+    @Override
+    public void setTrackTintList(int resId) {
+        if (mTrackHelper != null) {
+            mTrackHelper.setButtonDrawableTintList(resId, null);
+        }
+    }
+
+    @Override
+    public void setTrackTintList(int resId, PorterDuff.Mode mode) {
+        if (mTrackHelper != null) {
+            mTrackHelper.setButtonDrawableTintList(resId, mode);
         }
     }
 
@@ -214,6 +329,12 @@ public class TintCheckBox extends CheckBox implements Tintable, AppCompatBackgro
         }
         if (mBackgroundHelper != null) {
             mBackgroundHelper.tint();
+        }
+        if (mTrackHelper != null) {
+            mTrackHelper.tint();
+        }
+        if (mThumbHelper != null) {
+            mThumbHelper.tint();
         }
     }
 }

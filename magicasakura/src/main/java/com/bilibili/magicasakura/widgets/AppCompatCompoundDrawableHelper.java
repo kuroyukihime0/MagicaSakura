@@ -27,7 +27,6 @@ import android.widget.TextView;
 
 import com.bilibili.magicasakura.R;
 import com.bilibili.magicasakura.utils.DrawableUtils;
-import com.bilibili.magicasakura.utils.ThemeUtils;
 import com.bilibili.magicasakura.utils.TintInfo;
 import com.bilibili.magicasakura.utils.TintManager;
 
@@ -35,18 +34,7 @@ import com.bilibili.magicasakura.utils.TintManager;
  * @author xyczero617@gmail.com
  * @time 15/9/26
  */
-public class AppCompatCompoundDrawableHelper extends AppCompatBaseHelper {
-
-    private static final int[] ATTR = {
-            R.attr.drawableLeftTint,
-            R.attr.drawableTopTint,
-            R.attr.drawableRightTint,
-            R.attr.drawableBottomTint,
-            R.attr.drawableLeftTintMode,
-            R.attr.drawableTopTintMode,
-            R.attr.drawableRightTintMode,
-            R.attr.drawableBottomTintMode
-    };
+class AppCompatCompoundDrawableHelper extends AppCompatBaseHelper<TextView> {
 
     private TintInfo[] mCompoundDrawableTintInfos = new TintInfo[4];
 
@@ -54,7 +42,7 @@ public class AppCompatCompoundDrawableHelper extends AppCompatBaseHelper {
     private int[] mCompoundDrawableTintResIds = new int[4];
     private PorterDuff.Mode[] mCompoundDrawableTintModes = new PorterDuff.Mode[4];
 
-    public AppCompatCompoundDrawableHelper(TextView view, TintManager tintManager) {
+    AppCompatCompoundDrawableHelper(TextView view, TintManager tintManager) {
         super(view, tintManager);
     }
 
@@ -62,19 +50,27 @@ public class AppCompatCompoundDrawableHelper extends AppCompatBaseHelper {
     @Override
     void loadFromAttribute(AttributeSet attrs, int defStyleAttr) {
         Context context = mView.getContext();
-        TypedArray a = context.obtainStyledAttributes(attrs, ATTR, defStyleAttr, 0);
-        for (int tintIndex = 0; tintIndex < 4; tintIndex++) {
-            int modeIndex = tintIndex + 4;
-            mCompoundDrawableResIds[tintIndex] = a.getResourceId(tintIndex, 0);
-            mCompoundDrawableTintResIds[tintIndex] = a.getResourceId(tintIndex, 0);
-            if (a.hasValue(modeIndex)) {
-                mCompoundDrawableTintModes[tintIndex] = DrawableUtils.parseTintMode(a.getInt(modeIndex, 0), null);
-            }
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.TintCompoundDrawableHelper, defStyleAttr, 0);
+        mCompoundDrawableResIds[0] = a.getResourceId(R.styleable.TintCompoundDrawableHelper_android_drawableLeft, 0);
+        mCompoundDrawableTintResIds[0] = a.getResourceId(R.styleable.TintCompoundDrawableHelper_drawableLeftTint, 0);
+        if (a.hasValue(R.styleable.TintCompoundDrawableHelper_drawableLeftTintMode)) {
+            mCompoundDrawableTintModes[0] = DrawableUtils.parseTintMode(a.getInt(R.styleable.TintCompoundDrawableHelper_drawableLeftTintMode, 0), null);
         }
-        mCompoundDrawableResIds[0] = ThemeUtils.getThemeAttrId(context, attrs, android.R.attr.drawableLeft);
-        mCompoundDrawableResIds[1] = ThemeUtils.getThemeAttrId(context, attrs, android.R.attr.drawableTop);
-        mCompoundDrawableResIds[2] = ThemeUtils.getThemeAttrId(context, attrs, android.R.attr.drawableRight);
-        mCompoundDrawableResIds[3] = ThemeUtils.getThemeAttrId(context, attrs, android.R.attr.drawableBottom);
+        mCompoundDrawableResIds[1] = a.getResourceId(R.styleable.TintCompoundDrawableHelper_android_drawableTop, 0);
+        mCompoundDrawableTintResIds[1] = a.getResourceId(R.styleable.TintCompoundDrawableHelper_drawableTopTint, 0);
+        if (a.hasValue(R.styleable.TintCompoundDrawableHelper_drawableTopTintMode)) {
+            mCompoundDrawableTintModes[1] = DrawableUtils.parseTintMode(a.getInt(R.styleable.TintCompoundDrawableHelper_drawableTopTintMode, 0), null);
+        }
+        mCompoundDrawableResIds[2] = a.getResourceId(R.styleable.TintCompoundDrawableHelper_android_drawableRight, 0);
+        mCompoundDrawableTintResIds[2] = a.getResourceId(R.styleable.TintCompoundDrawableHelper_drawableRightTint, 0);
+        if (a.hasValue(R.styleable.TintCompoundDrawableHelper_drawableRightTintMode)) {
+            mCompoundDrawableTintModes[2] = DrawableUtils.parseTintMode(a.getInt(R.styleable.TintCompoundDrawableHelper_drawableRightTintMode, 0), null);
+        }
+        mCompoundDrawableResIds[3] = a.getResourceId(R.styleable.TintCompoundDrawableHelper_android_drawableBottom, 0);
+        mCompoundDrawableTintResIds[3] = a.getResourceId(R.styleable.TintCompoundDrawableHelper_drawableBottomTint, 0);
+        if (a.hasValue(R.styleable.TintCompoundDrawableHelper_drawableBottomTintMode)) {
+            mCompoundDrawableTintModes[3] = DrawableUtils.parseTintMode(a.getInt(R.styleable.TintCompoundDrawableHelper_drawableBottomTintMode, 0), null);
+        }
         a.recycle();
 
         setCompoundDrawablesWithIntrinsicBounds(
@@ -126,7 +122,7 @@ public class AppCompatCompoundDrawableHelper extends AppCompatBaseHelper {
     private void setCompoundDrawablesWithIntrinsicBounds(Drawable left, Drawable top, Drawable right, Drawable bottom) {
         if (skipNextApply()) return;
 
-        ((TextView) mView).setCompoundDrawablesWithIntrinsicBounds(left, top, right, bottom);
+        mView.setCompoundDrawablesWithIntrinsicBounds(left, top, right, bottom);
     }
 
     private Drawable getCompoundDrawableByPosition(int i) {
@@ -167,7 +163,7 @@ public class AppCompatCompoundDrawableHelper extends AppCompatBaseHelper {
     }
 
     private Drawable applySupportCompoundDrawableTint(int position) {
-        Drawable originDrawable = ((TextView) mView).getCompoundDrawables()[position];
+        Drawable originDrawable = mView.getCompoundDrawables()[position];
         Drawable compoundDrawable = originDrawable;
         TintInfo tintInfo = mCompoundDrawableTintInfos[position];
         if (compoundDrawable != null && tintInfo != null && tintInfo.mHasTintList) {
